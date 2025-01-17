@@ -12,18 +12,34 @@ contract SimpleLiquidityPool {
     uint256 public reserveA;
     uint256 public reserveB;
 
-    event LiquidityAdded(address indexed provider, uint256 amountA, uint256 amountB);
-    event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB);
-    event TokenSwapped(address indexed trader, address inputToken, uint256 inputAmount, uint256 outputAmount);
+    event LiquidityAdded(
+        address indexed provider,
+        uint256 amountA,
+        uint256 amountB
+    );
+    event LiquidityRemoved(
+        address indexed provider,
+        uint256 amountA,
+        uint256 amountB
+    );
+    event TokenSwapped(
+        address indexed trader,
+        address inputToken,
+        uint256 inputAmount,
+        uint256 outputAmount
+    );
 
     constructor(address _tokenA, address _tokenB) {
-        tokenA = TokenA(_tokenA);
-        tokenB = TokenB(_tokenB);
+        tokenA = IERC20(_tokenA);
+        tokenB = IERC20(_tokenB);
     }
 
     // Add liquidity to the pool
     function addLiquidity(uint256 amountA, uint256 amountB) external {
-        require(amountA > 0 && amountB > 0, "Amounts must be greater than zero");
+        require(
+            amountA > 0 && amountB > 0,
+            "Amounts must be greater than zero"
+        );
 
         tokenA.transferFrom(msg.sender, address(this), amountA);
         tokenB.transferFrom(msg.sender, address(this), amountB);
@@ -55,7 +71,10 @@ contract SimpleLiquidityPool {
     // Swap tokens
     function swap(address inputToken, uint256 inputAmount) external {
         require(inputAmount > 0, "Input amount must be greater than zero");
-        require(inputToken == address(tokenA) || inputToken == address(tokenB), "Invalid input token");
+        require(
+            inputToken == address(tokenA) || inputToken == address(tokenB),
+            "Invalid input token"
+        );
 
         bool isTokenA = inputToken == address(tokenA);
         IERC20 input = isTokenA ? tokenA : tokenB;
@@ -65,7 +84,8 @@ contract SimpleLiquidityPool {
         uint256 outputReserve = isTokenA ? reserveB : reserveA;
 
         uint256 inputAmountWithFee = (inputAmount * 997) / 1000; // 0.3% fee
-        uint256 outputAmount = (inputAmountWithFee * outputReserve) / (inputReserve + inputAmountWithFee);
+        uint256 outputAmount = (inputAmountWithFee * outputReserve) /
+            (inputReserve + inputAmountWithFee);
 
         require(outputAmount > 0, "Insufficient output amount");
 
